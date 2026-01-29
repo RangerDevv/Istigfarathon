@@ -1,5 +1,5 @@
 export interface Masjid {
-    id: string;
+    $id: string;
     Name: string;
     Location: string;
     Count: number;
@@ -9,7 +9,7 @@ export interface Masjid {
 }
 
 export interface Activity {
-    id: string;
+    $id: string;
     Count: number;
-    masjid: Masjid["id"];
+    masjid: Masjid["$id"];
 }
