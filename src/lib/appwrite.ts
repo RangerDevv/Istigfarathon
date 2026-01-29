@@ -3,7 +3,7 @@ import {
   PUBLIC_APPWRITE_PROJECT_ID,
 } from "$env/static/public";
 
-import { Client, Account, Databases, TablesDB } from "appwrite";
+import { Client, Account, Databases, TablesDB, Query } from "appwrite";
 
 const client = new Client()
   .setEndpoint(PUBLIC_APPWRITE_ENDPOINT)
@@ -13,4 +13,4 @@ const account = new Account(client);
 const databases = new Databases(client);
 const tablesDB = new TablesDB(client);
 
-export { client, account, databases, tablesDB };
+export { client, account, databases, tablesDB, Query };
