@@ -150,7 +150,7 @@ body {
 .progress-track {
   position: relative;
   border-radius: 999px;
-  height: 0.55rem;
+  height: 0.9rem;
   background: rgba(209, 250, 229, 0.7);
   overflow: hidden;
 }

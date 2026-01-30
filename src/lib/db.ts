@@ -12,4 +12,5 @@ export interface Activity {
     $id: string;
     Count: number;
     masjid: Masjid["$id"] | Masjid;
+    $createdAt?: string;
 }
