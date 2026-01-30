@@ -11,5 +11,5 @@ export interface Masjid {
 export interface Activity {
     $id: string;
     Count: number;
-    masjid: Masjid["$id"];
+    masjid: Masjid["$id"] | Masjid;
 }
