@@ -25,18 +25,16 @@
         masjids = response.rows as unknown as Masjid[];
         });
 
-    const unsubscribe = browser ? client.subscribe(`databases.${MainDB}.collections.${Collection.Activity}.documents`, (response) => {
-        console.log("Activity Subscription Response:", response);
-
+    const unsubscribe = browser ? client.subscribe(`databases.${MainDB}.collections.${Collection.Activity}.documents`, (response:any) => {
         const isCreateEvent = response.events.some(
-            (event) =>
+            (event:any) =>
                 event.startsWith(`databases.${MainDB}.collections.${Collection.Activity}.documents.`) &&
                 event.endsWith(".create")
         );
 
         if (!isCreateEvent) return;
 
-        const relatedMasjid = response.payload.masjid as Masjid | undefined;
+        const relatedMasjid = response.payload.masjid as  Masjid | undefined;
 
         if (relatedMasjid && relatedMasjid.$id === data.slug) {
             // Update the local activity amount input
