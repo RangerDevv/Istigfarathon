@@ -258,4 +258,14 @@
             <p class="text-center text-slate-600">Loading masjid data...</p>
         {/if}
     </div>
+    <ConfirmDialog
+        open={showConfirm}
+        amount={pendingAmount}
+        masjidName={masjids.length > 0 ? masjids[0].Name : null}
+        on:confirm={addActivityConfirmed}
+        on:cancel={() => {
+            showConfirm = false;
+            pendingAmount = null;
+        }}
+    />
 </main>
