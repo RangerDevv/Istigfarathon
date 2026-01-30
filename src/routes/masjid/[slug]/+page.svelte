@@ -80,18 +80,80 @@
 
 </script>
 
-<main class="p-4">
-    {#if masjids.length > 0}
-        <h1 class="text-2xl font-bold mb-4">{masjids[0].Name}</h1>
-        <p class="mb-4">Location: {masjids[0].Location}</p>
-        <p class="mb-4">Current Activity Count: {masjids[0].Count}</p>
+<main class="app-shell">
+    <div class="card-soft w-full max-w-6xl px-10 py-10 checker-background relative overflow-hidden">
+        {#if masjids.length > 0}
+            {@const masjid = masjids[0]}
+            {@const percent = masjid.Goal > 0
+                ? Math.min(100, Math.round((masjid.Count / masjid.Goal) * 100))
+                : 0}
 
-        <div class="mb-4">
-            <label for="activityCount" class="block mb-2">Add Activity Count:</label>
-            <input type="number" id="activityCount" bind:value={activityCount} class="border p-2 w-full" />
-        </div>
-        <button on:click={addActivity} class="bg-blue-500 text-white px-4 py-2 rounded">Add Activity</button>
-    {:else}
-        <p>Loading masjid data...</p>
-    {/if}
+            <div class="relative z-[1] grid grid-cols-1 lg:grid-cols-[2.2fr,1.1fr] gap-10 items-center">
+                <section class="space-y-7">
+                    <header>
+                        <div class="pill mb-4 inline-flex">Masjid Progress</div>
+                        <h1 class="text-3xl md:text-5xl font-semibold text-emerald-950 mb-2 leading-tight">
+                            {masjid.Name}
+                        </h1>
+                        <p class="text-sm md:text-base text-slate-600">{masjid.Location}</p>
+                    </header>
+
+                    <div class="relative pt-2">
+                        <div class="absolute -inset-10 bg-emerald-500/12 blur-3xl rounded-full pointer-events-none"></div>
+                        <div class="relative">
+                            <p class="text-xs uppercase tracking-[0.22em] text-emerald-700/90 mb-1">
+                                Total Istighfars
+                            </p>
+                            <div class="text-6xl md:text-7xl font-semibold text-emerald-900 drop-shadow-sm">
+                                {masjid.Count.toLocaleString()}
+                            </div>
+                            <p class="mt-2 text-xs md:text-sm text-slate-600">
+                                Goal: <span class="font-medium text-emerald-800">{masjid.Goal.toLocaleString()}</span>
+                                <span class="ml-2 text-[0.75rem] text-slate-500">({percent}% complete)</span>
+                            </p>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="space-y-6">
+                    <div>
+                        <div class="flex justify-between text-xs text-slate-600 mb-2">
+                            <span>Progress towards goal</span>
+                            <span class="font-medium text-emerald-700">
+                                {masjid.Count.toLocaleString()} / {masjid.Goal.toLocaleString()}
+                            </span>
+                        </div>
+                        <div class="progress-track h-3">
+                            <div class="progress-fill" style={`transform: scaleX(${percent / 100})`}></div>
+                        </div>
+                        <div class="mt-2 text-[0.75rem] text-slate-500 flex justify-between">
+                            <span>Live istighfar counter</span>
+                            <span>{percent}% complete</span>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3">
+                        <div>
+                            <label for="activityCount" class="block text-xs font-medium text-slate-600 mb-1.5">
+                                Add istighfar amount
+                            </label>
+                            <input
+                                type="number"
+                                id="activityCount"
+                                min="1"
+                                bind:value={activityCount}
+                                class="input-soft text-base"
+                            />
+                        </div>
+
+                        <button type="button" on:click={addActivity} class="btn-primary w-full mt-1 text-base">
+                            Add to counter
+                        </button>
+                    </div>
+                </section>
+            </div>
+        {:else}
+            <p class="text-center text-slate-600">Loading masjid data...</p>
+        {/if}
+    </div>
 </main>
