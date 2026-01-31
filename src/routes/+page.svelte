@@ -27,8 +27,7 @@
         Assalamu Alaikum wa Rahmatullahi wa Barakatuh
       </h1>
       <p class="text-sm md:text-base text-slate-600 max-w-xl mx-auto">
-        Join a masjid and help reach its istighfar goal. Choose your masjid
-        below and watch the bar grow with every remembrance.
+        Choose your masjid below and watch the bar grow with every remembrance.
       </p>
     </header>
 
