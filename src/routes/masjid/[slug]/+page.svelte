@@ -5,7 +5,7 @@
     import { tablesDB , Query , client } from "$lib/appwrite";
     import ConfirmDialog from "$lib/ConfirmDialog.svelte";
     import { ID } from "appwrite";
-    import { onMount } from "svelte";
+    import { onMount, onDestroy } from "svelte";
     import { browser } from "$app/environment";
     import { on } from "svelte/events";
     
@@ -18,6 +18,73 @@
     let activityCount = 0;
     let lastActivityAmount: number | null = null;
     let lastActivityAt: string | null = null;
+
+    const COOLDOWN_MS = 90 * 60 * 1000; // 1 hour 30 minutes
+    const COOLDOWN_STORAGE_KEY = (slug: string) => `istigfar_last_add_${slug}`;
+
+    let isOnCooldown = false;
+    let cooldownRemainingMs = 0;
+    let cooldownInterval: ReturnType<typeof setInterval> | null = null;
+
+    function stopCooldownTimer() {
+        if (cooldownInterval) {
+            clearInterval(cooldownInterval);
+            cooldownInterval = null;
+        }
+    }
+
+    function startCooldown(fromTimestamp: number) {
+        const elapsed = Date.now() - fromTimestamp;
+        const initialRemaining = COOLDOWN_MS - elapsed;
+
+        if (initialRemaining <= 0) {
+            isOnCooldown = false;
+            cooldownRemainingMs = 0;
+            stopCooldownTimer();
+            return;
+        }
+
+        isOnCooldown = true;
+        cooldownRemainingMs = initialRemaining;
+        stopCooldownTimer();
+
+        cooldownInterval = setInterval(() => {
+            const elapsedNow = Date.now() - fromTimestamp;
+            const remaining = COOLDOWN_MS - elapsedNow;
+
+            if (remaining <= 0) {
+                isOnCooldown = false;
+                cooldownRemainingMs = 0;
+                stopCooldownTimer();
+            } else {
+                cooldownRemainingMs = remaining;
+            }
+        }, 1000);
+    }
+
+    function restoreCooldownFromStorage() {
+        if (!browser) return;
+
+        const raw = localStorage.getItem(COOLDOWN_STORAGE_KEY(data.slug));
+        if (!raw) return;
+
+        const timestamp = Number(raw);
+        if (!Number.isNaN(timestamp)) {
+            startCooldown(timestamp);
+        }
+    }
+
+    function formatCooldown(ms: number): string {
+        const totalSeconds = Math.ceil(ms / 1000);
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+
+        if (hours > 0) {
+            return `${hours}h ${minutes}m`;
+        }
+
+        return `${minutes}m`;
+    }
 
     onMount(async () => {
         const response = await tablesDB.listRows({
@@ -44,6 +111,8 @@
             lastActivityAmount = activities[0].Count;
             lastActivityAt = activities[0].$createdAt ?? null;
         }
+
+        restoreCooldownFromStorage();
     });
 
     const unsubscribe = browser ? client.subscribe(`databases.${MainDB}.collections.${Collection.Activity}.documents`, (response:any) => {
@@ -94,10 +163,24 @@
         }
     });
 
+    onDestroy(() => {
+        stopCooldownTimer();
+    });
+
     let showConfirm = false;
     let pendingAmount: number | null = null;
 
     function requestAddActivity() {
+        if (isOnCooldown) {
+            if (browser) {
+                const message = cooldownRemainingMs > 0
+                    ? `You can add more istighfars in ${formatCooldown(cooldownRemainingMs)}.`
+                    : "You are currently on cooldown. Please try again shortly.";
+                alert(message);
+            }
+            return;
+        }
+
         const value = Number(activityCount);
         if (!value || value <= 0) {
             if (browser) {
@@ -138,6 +221,12 @@
         showConfirm = false;
         activityCount = 0;
         pendingAmount = null;
+
+        if (browser) {
+            const now = Date.now();
+            localStorage.setItem(COOLDOWN_STORAGE_KEY(data.slug), String(now));
+            startCooldown(now);
+        }
     }
 
 </script>
@@ -218,9 +307,24 @@
                             />
                         </div>
 
-                        <button type="button" on:click={requestAddActivity} class="btn-primary w-full mt-1 text-base">
-                            Add to counter
+                        <button
+                            type="button"
+                            on:click={requestAddActivity}
+                            class="btn-primary w-full mt-1 text-base disabled:opacity-60 disabled:cursor-not-allowed"
+                            disabled={isOnCooldown}
+                        >
+                            {#if isOnCooldown}
+                                On cooldown
+                            {:else}
+                                Add to counter
+                            {/if}
                         </button>
+
+                        {#if isOnCooldown}
+                            <p class="mt-1 text-[0.75rem] text-slate-500 text-right">
+                                You can add again in {formatCooldown(cooldownRemainingMs)}.
+                            </p>
+                        {/if}
                     </div>
                 </section>
             </div>
