@@ -28,6 +28,10 @@
     let cooldownRemainingMs = 0;
     let cooldownInterval: ReturnType<typeof setInterval> | null = null;
 
+    let embedCode: string | null = null;
+    let embedCopied = false;
+    let showEmbedDialog = false;
+
     function stopCooldownTimer() {
         if (cooldownInterval) {
             clearInterval(cooldownInterval);
@@ -115,6 +119,12 @@
         }
 
         restoreCooldownFromStorage();
+
+        if (browser) {
+            const origin = window.location.origin;
+            const src = `${origin}/masjid/${data.slug}`;
+            embedCode = `<iframe src="${src}" style="border:0;width:100%;max-width:640px;height:360px;" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>`;
+        }
     });
 
     const unsubscribe = browser ? client.subscribe(`databases.${MainDB}.collections.${Collection.Activity}.documents`, (response:any) => {
@@ -172,6 +182,20 @@
     let showConfirm = false;
     let pendingAmount: number | null = null;
     let inputError: string | null = null;
+
+    async function copyEmbedCode() {
+        if (!browser || !embedCode) return;
+
+        try {
+            await navigator.clipboard.writeText(embedCode);
+            embedCopied = true;
+            setTimeout(() => {
+                embedCopied = false;
+            }, 2000);
+        } catch (e) {
+            console.error("Failed to copy iframe code", e);
+        }
+    }
 
     function requestAddActivity() {
         inputError = null;
@@ -250,7 +274,17 @@
             <div class="relative z-[1] grid grid-cols-1 lg:grid-cols-[2.2fr,1.1fr] gap-10 items-center">
                 <section class="space-y-7">
                     <header>
-                        <div class="pill mb-4 inline-flex">Masjid Progress</div>
+                        <div class="flex items-center justify-between gap-3 mb-4">
+                            <div class="pill inline-flex">Masjid Progress</div>
+                            <button
+                                type="button"
+                                class="text-[0.7rem] font-medium text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-100 px-3 py-1 rounded-full flex items-center gap-1"
+                                on:click={() => (showEmbedDialog = true)}
+                            >
+                                <span class="text-[0.9em]">&lt;/&gt;</span>
+                                <span>Get embed code</span>
+                            </button>
+                        </div>
                         <h1 class="text-3xl md:text-5xl font-semibold text-emerald-950 mb-2 leading-tight">
                             {masjid.Name}
                         </h1>
@@ -390,4 +424,57 @@
             pendingAmount = null;
         }}
     />
+
+    {#if showEmbedDialog}
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+            <div class="w-full max-w-lg rounded-2xl bg-white shadow-xl p-5 space-y-3">
+                <div class="flex items-center justify-between gap-2">
+                    <div>
+                        <h2 class="text-sm font-semibold text-emerald-900">Embed this counter</h2>
+                        <p class="text-[0.78rem] text-slate-600 mt-0.5">
+                            Copy this iframe code into your website where you want the live istighfar counter for this masjid to appear.
+                        </p>
+                    </div>
+                    <button
+                        type="button"
+                        class="text-slate-400 hover:text-slate-700 text-lg leading-none px-1"
+                        on:click={() => (showEmbedDialog = false)}
+                        aria-label="Close embed dialog"
+                    >
+                        ×
+                    </button>
+                </div>
+                <div>
+                    <textarea
+                        class="input-soft text-xs font-mono w-full h-28 resize-none"
+                        readonly
+                    >{embedCode}</textarea>
+                    <p class="mt-1 text-[0.7rem] text-slate-500">
+                        The iframe uses this page&apos;s URL as the source, including all safeguards and live updates.
+                    </p>
+                </div>
+                <div class="flex justify-between items-center gap-2 pt-1">
+                    <button
+                        type="button"
+                        class="btn-primary text-xs px-4 py-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                        on:click={copyEmbedCode}
+                        disabled={!embedCode}
+                    >
+                        {#if embedCopied}
+                            Copied!
+                        {:else}
+                            Copy embed code
+                        {/if}
+                    </button>
+                    <button
+                        type="button"
+                        class="text-[0.78rem] text-slate-500 hover:text-slate-700"
+                        on:click={() => (showEmbedDialog = false)}
+                    >
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    {/if}
 </main>
