@@ -15,6 +15,8 @@
     let masjids: Masjid[] = [];
     let activities: Activity[] = [];
 
+    const MAX_ACTIVITY = 2000;
+
     let activityCount = 0;
     let lastActivityAmount: number | null = null;
     let lastActivityAt: string | null = null;
@@ -169,8 +171,11 @@
 
     let showConfirm = false;
     let pendingAmount: number | null = null;
+    let inputError: string | null = null;
 
     function requestAddActivity() {
+        inputError = null;
+
         if (isOnCooldown) {
             if (browser) {
                 const message = cooldownRemainingMs > 0
@@ -183,9 +188,12 @@
 
         const value = Number(activityCount);
         if (!value || value <= 0) {
-            if (browser) {
-                alert("Please enter a positive number of istighfars.");
-            }
+            inputError = "Please enter a positive number of istighfars.";
+            return;
+        }
+
+        if (value > MAX_ACTIVITY) {
+            inputError = `You can add a maximum of ${MAX_ACTIVITY.toLocaleString()} istighfars at once.`;
             return;
         }
 
@@ -302,9 +310,19 @@
                                 type="number"
                                 id="activityCount"
                                 min="1"
+                                max={MAX_ACTIVITY}
                                 bind:value={activityCount}
                                 class="input-soft text-base"
+                                aria-invalid={!!inputError}
                             />
+                            <p class="mt-1 text-[0.75rem] text-slate-500">
+                                Maximum per submission: {MAX_ACTIVITY.toLocaleString()} istighfars.
+                            </p>
+                            {#if inputError}
+                                <p class="mt-1 text-[0.75rem] text-red-500">
+                                    {inputError}
+                                </p>
+                            {/if}
                         </div>
 
                         <button
