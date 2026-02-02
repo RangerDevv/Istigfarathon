@@ -380,6 +380,30 @@
                     </div>
                 </section>
             </div>
+            <section class="mt-10 relative z-[1] max-w-3xl mx-auto text-center space-y-4">
+                <p class="text-[0.7rem] uppercase tracking-[0.22em] text-emerald-800/80">
+                    Heart reminder
+                </p>
+                <div class="rounded-2xl border border-emerald-100/80 bg-white/80 backdrop-blur-sm shadow-sm px-6 py-5 space-y-4 text-sm md:text-[0.95rem] text-slate-700">
+                    <figure class="space-y-1">
+                        <blockquote class="italic">
+                            “Glad tidings to the one who finds a lot of seeking forgiveness in his record.”
+                        </blockquote>
+                        <figcaption class="text-[0.75rem] text-slate-500">
+                            — Sunan Ibn Mājah (ṣaḥīḥ)
+                        </figcaption>
+                    </figure>
+                    <figure class="space-y-1">
+                        <blockquote class="italic">
+                            “When a servant commits a sin, a black dot appears on his heart. If he seeks forgiveness, his heart is polished clean.”
+                        </blockquote>
+                        <figcaption class="text-[0.75rem] text-slate-500">
+                            — Sunan al-Tirmidhi (ḥasan ṣaḥīḥ)
+                        </figcaption>
+                    </figure>
+                </div>
+            </section>
+
             {#if activities.length > 0}
                 <section class="mt-8 relative z-[1]">
                     <h2 class="text-xs uppercase tracking-[0.22em] text-emerald-800/90 mb-2">
